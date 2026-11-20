@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>중2 수학 자기주도 형성평가 (Ⅲ. 일차함수)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- KaTeX -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    .katex { font-size: 1.05em; }
+    .card-hover {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-hover:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+    }
+    /* Custom scrollbar for selects */
+    select {
+      scrollbar-width: thin;
+      scrollbar-color: #94a3b8 #f1f5f9;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation Bar -->
+  <header id="app-header" class="hidden bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+          ∑
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 leading-tight">자기주도 형성평가</h1>
+          <p class="text-xs text-slate-500">비상교육 중학교 수학 2 · Ⅲ. 일차함수</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- Google Sheets Sync Status Badge -->
+        <div id="sync-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+          <span>시트 연동됨</span>
+        </div>
+
+        <!-- Sound Toggle -->
+        <button id="btn-sound-toggle" type="button" onclick="toggleSound()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 transition">
+          <span id="sound-icon">🔊</span>
+          <span id="sound-label">효과음 ON</span>
+        </button>
+
+        <!-- Student Info Badge -->
+        <button type="button" onclick="editStudentInfo()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 transition"
+          title="클릭하여 학생 정보 수정">
+          <span>👤</span>
+          <span id="header-student-info">2학년 1반 1번 홍길동</span>
+          <span class="text-[10px] underline ml-1">수정</span>
+        </button>
+
+        <!-- Excel Export Button -->
+        <button type="button" onclick="exportToExcel()"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition">
+          <span>📥</span>
+          <span>엑셀로 내보내기</span>
+          <span id="record-count-badge" class="ml-0.5 px-1.5 py-0.2 bg-emerald-800 text-emerald-100 rounded-full text-[11px]">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
+
+    <!-- STEP 0: Student Login / Identification Screen -->
+    <section id="view-login" class="max-w-lg mx-auto mt-6 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+      <div class="bg-gradient-to-r from-indigo-600 to-blue-600 px-6 py-7 text-white">
+        <div class="inline-block px-2.5 py-1 bg-white/20 rounded-full text-xs font-semibold mb-2">
+          수업 후 스스로 점검하기
+        </div>
+        <h2 class="text-2xl font-extrabold tracking-tight">중학교 수학 2 형성평가</h2>
+        <p class="text-indigo-100 text-sm mt-1">학년·반·번호를 선택하고 이름을 입력한 후 시작하세요.</p>
+      </div>
+
+      <form id="login-form" onsubmit="handleLogin(event)" class="p-6 space-y-5">
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label for="sel-grade" class="block text-xs font-bold text-slate-700 mb-1.5">학년 선택</label>
+            <select id="sel-grade" size="5"
+              class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none">
+              <option value="1">1학년</option>
+              <option value="2" selected>2학년</option>
+              <option value="3">3학년</option>
+            </select>
+          </div>
+          <div>
+            <label for="sel-class" class="block text-xs font-bold text-slate-700 mb-1.5">반 선택 (1~7반)</label>
+            <select id="sel-class" size="5"
+              class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none">
+            </select>
+          </div>
+          <div>
+            <label for="sel-number" class="block text-xs font-bold text-slate-700 mb-1.5">번호 선택 (1~40번)</label>
+            <select id="sel-number" size="5"
+              class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-800 focus:border-indigo-500 focus:bg-white focus:outline-none">
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="inp-name" class="block text-xs font-bold text-slate-700 mb-1.5">이름 (직접 입력)</label>
+          <input id="inp-name" type="text" required placeholder="예: 김민준" autocomplete="off"
+            class="w-full rounded-xl border border-slate-300 px-4 py-3 text-base font-medium text-slate-900 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none" />
+        </div>
+
+        <button type="submit"
+          class="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold text-base shadow-md transition flex items-center justify-center gap-2">
+          <span>형성평가 시작하기</span>
+          <span>→</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- Breadcrumb Navigation -->
+    <nav id="breadcrumb-bar" class="hidden mb-5 flex flex-wrap items-center justify-between gap-2 bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm">
+      <ol id="breadcrumb-list" class="flex flex-wrap items-center gap-1.5 text-sm font-medium text-slate-600"></ol>
+      <button id="btn-go-back" type="button" onclick="goBack()"
+        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+        <span>←</span>
+        <span>이전 단계로</span>
+      </button>
+    </nav>
+
+    <!-- STEP 1: Major Unit (대단원) -->
+    <section id="view-major" class="hidden space-y-4">
+      <div class="mb-2">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">STEP 1 · 대단원 선택</span>
+        <h2 class="text-xl font-extrabold text-slate-900 mt-0.5">학습할 대단원을 선택하세요</h2>
+      </div>
+      <div id="major-list" class="grid grid-cols-1 gap-4"></div>
+    </section>
+
+    <!-- STEP 2: Middle Unit (중단원) -->
+    <section id="view-middle" class="hidden space-y-4">
+      <div class="mb-2">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">STEP 2 · 중단원 선택</span>
+        <h2 id="middle-heading" class="text-xl font-extrabold text-slate-900 mt-0.5">중단원을 선택하세요</h2>
+      </div>
+      <div id="middle-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- STEP 3: Sub Unit (소단원) -->
+    <section id="view-sub" class="hidden space-y-4">
+      <div class="mb-2">
+        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600">STEP 3 · 소단원 선택</span>
+        <h2 id="sub-heading" class="text-xl font-extrabold text-slate-900 mt-0.5">소단원을 선택하세요</h2>
+      </div>
+      <div id="sub-list" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- STEP 4: Question Type Selection & Quiz Arena -->
+    <section id="view-quiz" class="hidden space-y-6">
+      <!-- Quiz Header & Type Filter -->
+      <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <span id="quiz-unit-badge" class="inline-block px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-bold mb-1.5"></span>
+            <h2 id="quiz-title" class="text-xl font-extrabold text-slate-900"></h2>
+            <p id="quiz-desc" class="text-sm text-slate-500 mt-0.5"></p>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-400 block">현재 PC 시각</span>
+            <span id="live-clock" class="text-xs font-mono font-semibold text-slate-600"></span>
+          </div>
+        </div>
+
+        <!-- Question Type Tabs -->
+        <div class="pt-3 border-t border-slate-100">
+          <span class="block text-xs font-bold text-slate-500 mb-2">문항 유형 선택</span>
+          <div id="type-selector" class="flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <!-- Questions Container -->
+      <div id="questions-container" class="space-y-5"></div>
+
+      <!-- Submit / Grade Button -->
+      <div id="quiz-actions" class="flex flex-wrap items-center justify-between gap-3 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <p class="text-sm text-slate-600">모든 문항을 작성한 뒤 아래 버튼을 눌러 채점하세요.</p>
+        <div class="flex items-center gap-2.5">
+          <button type="button" onclick="resetCurrentQuiz()"
+            class="px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 text-sm font-bold transition">
+            다시 풀기
+          </button>
+          <button type="button" onclick="gradeQuiz()"
+            class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md transition">
+            채점 및 결과 확인
+          </button>
+        </div>
+      </div>
+
+      <!-- Grading Result Summary + Ask Teacher Box -->
+      <div id="result-panel" class="hidden space-y-5">
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl p-6 shadow-lg">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="px-2.5 py-0.5 rounded-full bg-indigo-500/30 border border-indigo-400/40 text-xs font-bold text-indigo-200">
+                  채점 완료
+                </span>
+                <span id="result-sync-tag" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-xs font-semibold text-emerald-200">
+                  구글 시트 전송 대기
+                </span>
+              </div>
+              <h3 id="result-headline" class="text-2xl font-extrabold mt-1"></h3>
+              <p id="result-subtext" class="text-sm text-slate-300 mt-1"></p>
+            </div>
+            <div class="flex flex-wrap gap-2.5">
+              <button type="button" onclick="exportToExcel()"
+                class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-bold shadow transition flex items-center gap-1.5">
+                <span>📥</span>
+                <span>엑셀로 내보내기</span>
+              </button>
+              <button type="button" onclick="goBack()"
+                class="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition">
+                다른 소단원 선택
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ask Teacher Section (Appears after grading) -->
+        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🙋‍♂️</span>
+              <div>
+                <h4 class="text-base font-extrabold text-amber-950">선생님께 질문 보내기</h4>
+                <p class="text-xs text-amber-800">풀면서 헷갈렸던 개념이나 추가로 질문하고 싶은 내용을 적으면 엑셀 및 구글 시트에 함께 기록됩니다.</p>
+              </div>
+            </div>
+            <span id="question-saved-badge" class="hidden px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+              ✓ 전송 완료
+            </span>
+          </div>
+
+          <textarea id="teacher-question-input" rows="3"
+            placeholder="예: 기울기가 음수일 때 x절편을 구하는 과정이 헷갈립니다. / 서술형 2번 풀이 과정이 맞는지 궁금해요."
+            class="w-full rounded-xl border border-amber-300 bg-white p-3.5 text-sm text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none"></textarea>
+
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span id="question-status-text" class="text-xs text-amber-700 font-medium"></span>
+            <button type="button" onclick="submitTeacherQuestion()"
+              class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold shadow-sm transition flex items-center gap-1.5">
+              <span>✉️</span>
+              <span>질문 등록 및 전송</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 hidden max-w-sm bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2.5">
+    <span id="toast-icon">ℹ️</span>
+    <span id="toast-msg"></span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 0. CONFIGURATION & SOUND FX (Web Audio API)
+    // =========================================================================
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxFCd4vFGUBYG4Im4Eh043nCpQhgFpWMHoQLHRhfZ3CPkLbrGQ98ALx5dRhVypilc8_1w/exec";
+
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playClickSound() {
+      if (!soundEnabled) return;
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(620, now);
+      osc.frequency.exponentialRampToValueAtTime(340, now + 0.055);
+      gain.gain.setValueAtTime(0.14, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.065);
+    }
+
+    function playSuccessChime() {
+      if (!soundEnabled) return;
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const now = ctx.currentTime + idx * 0.08;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.16, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.3);
+      });
+    }
+
+    function playNotifySound() {
+      if (!soundEnabled) return;
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const notes = [587.33, 880]; // D5 -> A5
+      notes.forEach((freq, idx) => {
+        const now = ctx.currentTime + idx * 0.09;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.22);
+      });
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      const label = document.getElementById('sound-label');
+      if (soundEnabled) {
+        icon.textContent = '🔊';
+        label.textContent = '효과음 ON';
+        playClickSound();
+      } else {
+        icon.textContent = '🔇';
+        label.textContent = '효과음 OFF';
+      }
+    }
+
+    // Global button click sound listener
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (btn && btn.id !== 'btn-sound-toggle') {
+        playClickSound();
+      }
+    });
+
+    // =========================================================================
+    // 1. CURRICULUM & QUESTION BANK (비상교육 중2 수학 Ⅲ. 일차함수)
+    // =========================================================================
+    const SVG_GRAPHS = {
+      q_m1_s3_mc2: `
+        <svg viewBox="0 0 220 220" class="w-48 h-48 mx-auto my-3 bg-white border border-slate-200 rounded-lg">
+          <defs>
+            <pattern id="grid1" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="220" height="220" fill="url(#grid1)" />
+          <line x1="10" y1="110" x2="210" y2="110" stroke="#334155" stroke-width="1.5"/>
+          <line x1="110" y1="10" x2="110" y2="210" stroke="#334155" stroke-width="1.5"/>
+          <text x="198" y="124" font-size="11" fill="#334155" font-style="italic">x</text>
+          <text x="116" y="20" font-size="11" fill="#334155" font-style="italic">y</text>
+          <text x="98" y="123" font-size="10" fill="#334155">O</text>
+          <text x="147" y="123" font-size="10" fill="#334155">2</text>
+          <text x="97" y="94" font-size="10" fill="#334155">1</text>
+          <line x1="20" y1="60" x2="200" y2="115" stroke="#e11d48" stroke-width="2.2"/>
+          <line x1="150" y1="90" x2="150" y2="110" stroke="#64748b" stroke-dasharray="3,3"/>
+          <line x1="110" y1="90" x2="150" y2="90" stroke="#64748b" stroke-dasharray="3,3"/>
+          <circle cx="150" cy="90" r="3" fill="#e11d48"/>
+          <text x="125" y="72" font-size="11" fill="#be123c" font-weight="bold">y = ax + b</text>
+        </svg>
+      `,
+      q_m2_s2_mc1: `
+        <svg viewBox="0 0 220 220" class="w-48 h-48 mx-auto my-3 bg-white border border-slate-200 rounded-lg">
+          <defs>
+            <pattern id="grid2" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="220" height="220" fill="url(#grid2)" />
+          <line x1="10" y1="110" x2="210" y2="110" stroke="#334155" stroke-width="1.5"/>
+          <line x1="110" y1="10" x2="110" y2="210" stroke="#334155" stroke-width="1.5"/>
+          <text x="198" y="124" font-size="11" fill="#334155">x</text>
+          <text x="116" y="20" font-size="11" fill="#334155">y</text>
+          <text x="98" y="123" font-size="10" fill="#334155">O</text>
+          <text x="147" y="123" font-size="10" fill="#334155">2</text>
+          <text x="64" y="123" font-size="10" fill="#334155">-2</text>
+          <text x="97" y="74" font-size="10" fill="#334155">2</text>
+          <text x="97" y="34" font-size="10" fill="#334155">4</text>
+          <!-- Green line: y = 2x + 3 -->
+          <line x1="40" y1="190" x2="130" y2="10" stroke="#059669" stroke-width="2.2"/>
+          <!-- Pink line: y = -1/2 x + 1/2 -->
+          <line x1="20" y1="60" x2="200" y2="150" stroke="#e11d48" stroke-width="2.2"/>
+          <circle cx="90" cy="90" r="3.5" fill="#1e293b"/>
+        </svg>
+      `,
+      q_m2_s1_mc2: `
+        <svg viewBox="0 0 220 220" class="w-48 h-48 mx-auto my-3 bg-white border border-slate-200 rounded-lg">
+          <defs>
+            <pattern id="grid3" width="20" height="20" patternUnits="userSpaceOnUse">
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e2e8f0" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="220" height="220" fill="url(#grid3)" />
+          <line x1="10" y1="110" x2="210" y2="110" stroke="#334155" stroke-width="1.5"/>
+          <line x1="110" y1="10" x2="110" y2="210" stroke="#334155" stroke-width="1.5"/>
+          <text x="198" y="124" font-size="11" fill="#334155">x</text>
+          <text x="116" y="20" font-size="11" fill="#334155">y</text>
+          <text x="98" y="123" font-size="10" fill="#334155">O</text>
+          <text x="62" y="123" font-size="10" fill="#334155">-2</text>
+          <!-- Vertical line x = -2 -->
+          <line x1="70" y1="15" x2="70" y2="205" stroke="#db2777" stroke-width="2.5"/>
+        </svg>
+      `
+    };
+
+    const CURRICULUM = [
+      {
+        id: "major_3",
+        title: "Ⅲ. 일차함수",
+        subtitle: "비상교육 중학교 수학 2 · 대단원 Ⅲ",
+        description: "함수와 일차함수의 뜻을 이해하고, 그래프의 성질과 일차방정식과의 관계를 탐구합니다.",
+        middleUnits: [
+          {
+            id: "mid_3_1",
+            title: "1. 일차함수와 그 그래프",
+            description: "함수의 개념, 일차함수의 그래프 그리기, 절편과 기울기, 일차함수의 식 구하기",
+            subUnits: [
+              {
+                id: "sub_3_1_1",
+                title: "01. 함수와 함숫값",
+                description: "두 변수 사이의 대응 관계로 함수의 뜻을 이해하고 함숫값을 구합니다.",
+                questions: [
+                  {
+                    id: "3_1_1_ox1",
+                    type: "OX",
+                    question: "한 자루에 $200$원인 연필 $x$자루의 가격이 $y$원일 때, $y$는 $x$의 함수이다.",
+                    answer: "O",
+                    explanation: "$x$의 값이 정해지면 $y=200x$로 $y$의 값이 오직 하나씩 대응하므로 함수입니다."
+                  },
+                  {
+                    id: "3_1_1_ox2",
+                    type: "OX",
+                    question: "자연수 $x$와 그 약수 $y$ 사이에는 $y$가 $x$의 함수인 관계가 성립한다.",
+                    answer: "X",
+                    explanation: "예를 들어 $x=4$일 때 약수 $y$는 $1, 2, 4$로 $3$개가 대응하므로 함수가 아닙니다."
+                  },
+                  {
+                    id: "3_1_1_ox3",
+                    type: "OX",
+                    question: "함수 $f(x) = \\frac{1}{3}x + 2$에서 $f(3) = 4$이다.",
+                    answer: "X",
+                    explanation: "$f(3) = \\frac{1}{3} \\times 3 + 2 = 1 + 2 = 3$입니다."
+                  },
+                  {
+                    id: "3_1_1_mc1",
+                    type: "MC",
+                    question: "다음 중에서 $y$가 $x$의 함수가 **아닌** 것은?",
+                    options: [
+                      "음의 정수 $x$의 절댓값 $y$",
+                      "자연수 $x$보다 $2$만큼 작은 자연수 $y$",
+                      "올해 $43$세인 어머니의 $x$년 후의 나이 $y$세",
+                      "시속 $2\\text{ km}$로 $y$시간 동안 걸어간 거리 $10\\text{ km}$",
+                      "가로가 $2\\text{ cm}$, 세로가 $(x+1)\\text{ cm}$인 직사각형의 둘레의 길이 $y\\text{ cm}$"
+                    ],
+                    answer: "2",
+                    explanation: "$x=1, 2$일 때 $x$보다 $2$만큼 작은 자연수 $y$가 존재하지 않으므로 함수가 아닙니다."
+                  },
+                  {
+                    id: "3_1_1_mc2",
+                    type: "MC",
+                    question: "함수 $f(x) = 3x - 1$에 대하여 $f(-2) + 2f(1)$의 값은?",
+                    options: ["$-5$", "$-3$", "$-1$", "$1$", "$3$"],
+                    answer: "2",
+                    explanation: "$f(-2) = -6 - 1 = -7$, $f(1) = 3 - 1 = 2$이므로 $-7 + 2(2) = -3$입니다."
+                  },
+                  {
+                    id: "3_1_1_mc3",
+                    type: "MC",
+                    question: "함수 $f(x) = \\frac{a}{x}$에 대하여 $f(2) = 4$일 때, $f(-2) - f(4)$의 값은? (단, $a$는 수)",
+                    options: ["$-6$", "$-4$", "$-2$", "$2$", "$6$"],
+                    answer: "1",
+                    explanation: "$f(2) = \\frac{a}{2} = 4 \\Rightarrow a = 8$. 따라서 $f(-2) - f(4) = -4 - 2 = -6$입니다."
+                  },
+                  {
+                    id: "3_1_1_sa1",
+                    type: "SA",
+                    question: "함수 $f(x) = ax$에 대하여 $f(-2) = a + 1$일 때, $f(a)$의 값을 구하시오. (단, $a$는 수)",
+                    answer: "1/9",
+                    keywords: ["1/9"],
+                    explanation: "$-2a = a + 1 \\Rightarrow -3a = 1 \\Rightarrow a = -\\frac{1}{3}$. 따라서 $f\\left(-\\frac{1}{3}\\right) = \\left(-\\frac{1}{3}\\right)^2 = \\frac{1}{9}$입니다."
+                  },
+                  {
+                    id: "3_1_1_sa2",
+                    type: "SA",
+                    question: "통화 시간에 상관없이 한 달 요금이 $30000$원인 요금제에서 어느 달 총 통화 시간을 $x$분, 요금을 $y$원이라 할 때 $y$가 $x$의 함수인지 쓰고 이유를 간단히 서술하시오.",
+                    answer: "함수이다. x의 값이 변함에 따라 y의 값이 30000으로 오직 하나씩 대응하기 때문이다.",
+                    keywords: ["함수", "하나"],
+                    explanation: "$x$의 값에 관계없이 $y=30000$으로 오직 하나씩 정해지므로 함수입니다."
+                  }
+                ]
+              },
+              {
+                id: "sub_3_1_2",
+                title: "02. 일차함수와 그 그래프 (절편·기울기)",
+                description: "일차함수의 뜻, 평행이동, x절편과 y절편, 기울기의 개념을 학습합니다.",
+                questions: [
+                  {
+                    id: "3_1_2_ox1",
+                    type: "OX",
+                    question: "일차함수 $y = 3x - 1$의 그래프의 $y$절편은 $-1$이다.",
+                    answer: "O",
+                    explanation: "$y=ax+b$에서 $y$절편은 상수항 $b=-1$입니다."
+                  },
+                  {
+                    id: "3_1_2_ox2",
+                    type: "OX",
+                    question: "$x$의 값의 증가량이 $4$일 때 $y$의 값의 증가량이 $2$인 일차함수의 그래프의 기울기는 $2$이다.",
+                    answer: "X",
+                    explanation: "$(\\text{기울기}) = \\frac{y\\text{의 증가량}}{x\\text{의 증가량}} = \\frac{2}{4} = \\frac{1}{2}$입니다."
+                  },
+                  {
+                    id: "3_1_2_ox3",
+                    type: "OX",
+                    question: "$y = \\frac{5}{x}$는 $x$에 대한 일차함수이다.",
+                    answer: "X",
+                    explanation: "분모에 미지수 $x$가 있으므로 일차식이 아니며 일차함수가 아닙니다."
+                  },
+                  {
+                    id: "3_1_2_mc1",
+                    type: "MC",
+                    question: "다음 일차함수의 그래프 중에서 일차함수 $y = -\\frac{1}{2}x$의 그래프를 평행이동하였을 때 포개어지는 것은?",
+                    options: [
+                      "$y = 2x$",
+                      "$y = -2x + \\frac{1}{2}$",
+                      "$y = \\frac{1}{2}(1 - x)$",
+                      "$y = -\\frac{1}{2}(2x + 3)$",
+                      "$y = \\frac{1}{2}(x - 4)$"
+                    ],
+                    answer: "3",
+                    explanation: "$y = \\frac{1}{2}(1-x) = -\\frac{1}{2}x + \\frac{1}{2}$이므로 기울기가 $-\\frac{1}{2}$로 같습니다."
+                  },
+                  {
+                    id: "3_1_2_mc2",
+                    type: "MC",
+                    question: "다음 일차함수의 그래프 중에서 $x$의 값이 $2$만큼 증가할 때, $y$의 값이 $3$만큼 감소하는 것은?",
+                    options: [
+                      "$y = -3x + 2$",
+                      "$y = -\\frac{3}{2}x + 5$",
+                      "$y = -\\frac{2}{3}x - 1$",
+                      "$y = \\frac{2}{3}x + 3$",
+                      "$y = 2x - 3$"
+                    ],
+                    answer: "2",
+                    explanation: "기울기가 $\\frac{-3}{2} = -\\frac{3}{2}$인 일차함수는 ②번입니다."
+                  },
+                  {
+                    id: "3_1_2_mc3",
+                    type: "MC",
+                    question: "일차함수 $y = 2x + b$의 그래프의 $y$절편과 일차함수 $y = \\frac{4}{3}x + 8$의 그래프의 $x$절편이 같을 때, 수 $b$의 값은?",
+                    options: ["$-8$", "$-6$", "$-4$", "$6$", "$8$"],
+                    answer: "2",
+                    explanation: "$y = \\frac{4}{3}x + 8$에 $y=0$을 대입하면 $x = -6$이므로 $b = -6$입니다."
+                  },
+                  {
+                    id: "3_1_2_sa1",
+                    type: "SA",
+                    question: "일차함수 $y = -\\frac{1}{3}x$의 그래프를 $y$축의 방향으로 $2$만큼 평행이동한 그래프의 $x$절편을 구하시오.",
+                    answer: "6",
+                    keywords: ["6"],
+                    explanation: "평행이동한 식은 $y = -\\frac{1}{3}x + 2$이고, $y=0$일 때 $x=6$입니다."
+                  },
+                  {
+                    id: "3_1_2_sa2",
+                    type: "SA",
+                    question: "일차함수 $y = \\frac{3}{2}x + b$의 그래프의 $y$절편이 $6$일 때, $x$절편을 구하는 과정을 서술하시오.",
+                    answer: "-4",
+                    keywords: ["-4"],
+                    explanation: "$y$절편이 $6$이므로 $b=6$, 식은 $y = \\frac{3}{2}x + 6$입니다. $y=0$을 대입하면 $x = -4$입니다."
+                  }
+                ]
+              },
+              {
+                id: "sub_3_1_3",
+                title: "03. 일차함수의 그래프의 성질과 식",
+                description: "기울기의 부호와 평행 조건, 주어진 조건으로 일차함수의 식 구하기 및 활용",
+                questions: [
+                  {
+                    id: "3_1_3_ox1",
+                    type: "OX",
+                    question: "일차함수 $y = 4x - 1$의 그래프는 기울기가 양수이므로 오른쪽 위로 향하는 직선이다.",
+                    answer: "O",
+                    explanation: "기울기 $a = 4 > 0$이므로 $x$가 증가할 때 $y$도 증가하여 오른쪽 위로 향합니다."
+                  },
+                  {
+                    id: "3_1_3_ox2",
+                    type: "OX",
+                    question: "두 일차함수 $y = 3x + 1$과 $y = 3x - 2$의 그래프는 기울기가 같고 $y$절편이 다르므로 서로 평행하다.",
+                    answer: "O",
+                    explanation: "기울기가 모두 $3$으로 같고 $y$절편($1 \\neq -2$)이 다르므로 평행합니다."
+                  },
+                  {
+                    id: "3_1_3_ox3",
+                    type: "OX",
+                    question: "일차함수 $y = -3x$의 그래프를 $y$축의 방향으로 $6$만큼 평행이동한 그래프는 제$3$사분면을 지난다.",
+                    answer: "X",
+                    explanation: "$y = -3x + 6$은 기울기가 음수이고 $y$절편이 양수이므로 제$1, 2, 4$사분면만 지납니다."
+                  },
+                  {
+                    id: "3_1_3_mc1",
+                    type: "MC",
+                    question: "다음 중에서 $x$의 값이 증가할 때 $y$의 값이 감소하는 일차함수는?",
+                    options: [
+                      "$y = \\frac{1}{2}x - 7$",
+                      "$y = \\frac{3}{5}x + 4$",
+                      "$y = -6x + 2$",
+                      "$y = 4x - 1$",
+                      "$y = x + 3$"
+                    ],
+                    answer: "3",
+                    explanation: "$x$가 증가할 때 $y$가 감소하려면 기울기 $a < 0$이어야 하므로 $y = -6x + 2$입니다."
+                  },
+                  {
+                    id: "3_1_3_mc2",
+                    type: "MC",
+                    question: "일차함수 $y = ax + b$의 그래프가 아래 그림과 같을 때, 다음 중에서 옳은 것은?",
+                    svg: "q_m1_s3_mc2",
+                    options: [
+                      "기울기는 $\\frac{1}{2}$이다.",
+                      "$x$절편은 $2$, $y$절편은 $1$이다.",
+                      "$2a + b = 1$",
+                      "$a + b \\le 0$",
+                      "$y = -ax + b$의 그래프와 평행하다."
+                    ],
+                    answer: "3",
+                    explanation: "그래프가 점 $(2, 1)$을 지나므로 $x=2, y=1$을 대입하면 $2a + b = 1$이 성립합니다."
+                  },
+                  {
+                    id: "3_1_3_mc3",
+                    type: "MC",
+                    question: "점 $(4, 5)$를 지나고 $x$절편이 $-6$인 직선을 그래프로 하는 일차함수의 식은?",
+                    options: [
+                      "$y = \\frac{1}{2}x + 3$",
+                      "$y = \\frac{1}{2}x - 3$",
+                      "$y = 2x - 3$",
+                      "$y = -\\frac{1}{2}x + 7$",
+                      "$y = \\frac{5}{4}x$"
+                    ],
+                    answer: "1",
+                    explanation: "두 점 $(4, 5), (-6, 0)$을 지나므로 기울기는 $\\frac{0-5}{-6-4}=\\frac{1}{2}$, 식은 $y=\\frac{1}{2}x+3$입니다."
+                  },
+                  {
+                    id: "3_1_3_sa1",
+                    type: "SA",
+                    question: "전기 버스의 $1$회 충전 전력량이 $150\\text{ kWh}$이고 $1\\text{ km}$ 주행할 때마다 $0.8\\text{ kWh}$씩 소비될 때, $100\\text{ km}$ 주행 후 남은 전력량($\\text{kWh}$)을 구하시오.",
+                    answer: "70",
+                    keywords: ["70"],
+                    explanation: "$y = -0.8x + 150$에 $x=100$을 대입하면 $y = -80 + 150 = 70\\text{ (kWh)}$입니다."
+                  },
+                  {
+                    id: "3_1_3_sa2",
+                    type: "SA",
+                    question: "세 점 $(-5, 1)$, $\\left(\\frac{5}{3}, a\\right)$, $(5, -5)$가 한 직선 위에 있을 때, $a$의 값을 구하는 과정을 서술하시오.",
+                    answer: "-3",
+                    keywords: ["-3"],
+                    explanation: "두 점 $(-5,1), (5,-5)$를 지나는 직선은 $y = -\\frac{3}{5}x - 2$이므로 $x=\\frac{5}{3}$일 때 $a = -1 - 2 = -3$입니다."
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            id: "mid_3_2",
+            title: "2. 일차함수와 일차방정식의 관계",
+            description: "직선의 방정식, 좌표축에 평행한 직선, 연립일차방정식의 해와 두 직선의 교점",
+            subUnits: [
+              {
+                id: "sub_3_2_1",
+                title: "01. 일차함수와 일차방정식",
+                description: "미지수가 2개인 일차방정식의 그래프와 좌표축에 평행한 직선의 방정식",
+                questions: [
+                  {
+                    id: "3_2_1_ox1",
+                    type: "OX",
+                    question: "일차방정식 $x + y + 1 = 0$의 그래프는 일차함수 $y = -x - 1$의 그래프와 같다.",
+                    answer: "O",
+                    explanation: "$x + y + 1 = 0$을 $y$에 관하여 풀면 $y = -x - 1$이므로 두 그래프는 일치합니다."
+                  },
+                  {
+                    id: "3_2_1_ox2",
+                    type: "OX",
+                    question: "일차방정식 $x = 1$의 그래프는 점 $(1, 0)$을 지나고 $x$축에 평행한 직선이다.",
+                    answer: "X",
+                    explanation: "$x = 1$의 그래프는 점 $(1, 0)$을 지나고 **$y$축**에 평행한 직선입니다."
+                  },
+                  {
+                    id: "3_2_1_ox3",
+                    type: "OX",
+                    question: "어떤 직선이든 항상 일차함수의 그래프라고 할 수 있다.",
+                    answer: "X",
+                    explanation: "$x = m$ 꼴의 직선($y$축에 평행한 직선)은 $x$값 하나에 $y$값이 무수히 많이 대응하므로 함수가 아닙니다."
+                  },
+                  {
+                    id: "3_2_1_mc1",
+                    type: "MC",
+                    question: "다음 중에서 일차방정식 $5x - y + 2 = 0$의 그래프에 대한 설명으로 옳지 **않은** 것은?",
+                    options: [
+                      "$y$절편은 $2$이다.",
+                      "점 $(1, 7)$을 지난다.",
+                      "제$1$사분면, 제$2$사분면, 제$3$사분면을 모두 지난다.",
+                      "$x$의 값이 증가할 때 $y$의 값은 감소한다.",
+                      "일차함수 $y = 5x$의 그래프와 평행하다."
+                    ],
+                    answer: "4",
+                    explanation: "$y = 5x + 2$이므로 기울기가 $5 > 0$이어서 $x$가 증가할 때 $y$도 증가합니다."
+                  },
+                  {
+                    id: "3_2_1_mc2",
+                    type: "MC",
+                    question: "아래 그림은 일차방정식 $2x - ay - b - 1 = 0$의 그래프이다. 이때 $a + b$의 값은?",
+                    svg: "q_m2_s1_mc2",
+                    options: ["$-5$", "$-3$", "$-1$", "$1$", "$3$"],
+                    answer: "1",
+                    explanation: "그래프가 직선 $x = -2$이므로 $y$의 계수 $-a = 0 \\Rightarrow a = 0$, $2(-2) - b - 1 = 0 \\Rightarrow b = -5$. 따라서 $a+b = -5$입니다."
+                  },
+                  {
+                    id: "3_2_1_mc3",
+                    type: "MC",
+                    question: "일차함수 $y = \\frac{2}{5}x - 3$의 그래프와 $y$축 위에서 만나고, $x$축에 평행한 직선의 방정식은?",
+                    options: [
+                      "$x = -3$",
+                      "$y = -3$",
+                      "$x = 0$",
+                      "$y = 3$",
+                      "$y = \\frac{2}{5}x$"
+                    ],
+                    answer: "2",
+                    explanation: "$y$축과 만나는 점 $(0, -3)$을 지나고 $x$축에 평행하므로 $y = -3$입니다."
+                  },
+                  {
+                    id: "3_2_1_sa1",
+                    type: "SA",
+                    question: "일차방정식 $5x + 4y - 20 = 0$의 그래프와 $x$축, $y$축으로 둘러싸인 삼각형의 넓이를 직선 $y = ax$가 이등분할 때, 수 $a$의 값을 구하시오.",
+                    answer: "5/4",
+                    keywords: ["5/4", "1.25"],
+                    explanation: "$x$절편 $4$, $y$절편 $5$인 삼각형의 넓이를 원점을 지나는 직선이 이등분하려면 밑변의 중점 $(2, \\frac{5}{2})$을 지나야 하므로 $a = \\frac{5}{4}$입니다."
+                  },
+                  {
+                    id: "3_2_1_sa2",
+                    type: "SA",
+                    question: "두 점 $(-3, -a)$, $(1, a+3)$을 지나는 직선이 $x$축과 평행할 때, $a$의 값을 구하는 과정을 서술하시오.",
+                    answer: "-3/2",
+                    keywords: ["-3/2", "-1.5"],
+                    explanation: "$x$축에 평행한 직선 위의 점은 $y$좌표가 같으므로 $-a = a + 3 \\Rightarrow 2a = -3 \\Rightarrow a = -\\frac{3}{2}$입니다."
+                  }
+                ]
+              },
+              {
+                id: "sub_3_2_2",
+                title: "02. 일차함수의 그래프와 연립일차방정식",
+                description: "연립방정식의 해와 두 직선의 교점, 두 직선의 위치 관계에 따른 해의 개수",
+                questions: [
+                  {
+                    id: "3_2_2_ox1",
+                    type: "OX",
+                    question: "연립방정식 $\\begin{cases} x - y = 1 \\\\ x + y = -1 \\end{cases}$의 해는 두 일차함수 $y = x - 1$, $y = -x - 1$의 그래프의 교점의 좌표와 같다.",
+                    answer: "O",
+                    explanation: "두 일차방정식을 각각 $y$에 대해 정리한 일차함수의 교점 $(0, -1)$이 연립방정식의 해입니다."
+                  },
+                  {
+                    id: "3_2_2_ox2",
+                    type: "OX",
+                    question: "연립방정식의 해가 없으면 두 일차방정식의 그래프의 기울기는 같고 $y$절편은 다르다.",
+                    answer: "O",
+                    explanation: "해가 없다는 것은 두 직선이 평행함을 의미하므로 기울기는 같고 $y$절편은 다릅니다."
+                  },
+                  {
+                    id: "3_2_2_ox3",
+                    type: "OX",
+                    question: "연립방정식에서 두 일차방정식의 그래프가 일치하면 해가 없다.",
+                    answer: "X",
+                    explanation: "두 직선이 일치하면 교점이 무수히 많으므로 연립방정식의 해는 무수히 많습니다."
+                  },
+                  {
+                    id: "3_2_2_mc1",
+                    type: "MC",
+                    question: "아래 그림과 같은 두 직선의 교점을 해로 갖는 연립방정식의 해 $(x, y)$는?",
+                    svg: "q_m2_s2_mc1",
+                    options: [
+                      "$x = -1, y = 1$",
+                      "$x = 1, y = -1$",
+                      "$x = 0, y = 3$",
+                      "$x = -2, y = 1$",
+                      "$x = 1, y = 1$"
+                    ],
+                    answer: "1",
+                    explanation: "그림에서 두 직선이 만나는 교점의 좌표가 $(-1, 1)$이므로 해는 $x = -1, y = 1$입니다."
+                  },
+                  {
+                    id: "3_2_2_mc2",
+                    type: "MC",
+                    question: "연립방정식 $\\begin{cases} x - ay = 3 \\\\ x + 2y = b \\end{cases}$의 해가 무수히 많을 때, $a + b$의 값은?",
+                    options: ["$-5$", "$-1$", "$1$", "$3$", "$5$"],
+                    answer: "3",
+                    explanation: "두 식이 일치해야 하므로 $-a = 2 \\Rightarrow a = -2$, $b = 3$. 따라서 $a + b = 1$입니다."
+                  },
+                  {
+                    id: "3_2_2_mc3",
+                    type: "MC",
+                    question: "다음 중에서 연립방정식의 두 직선의 위치 관계와 해에 대한 설명으로 옳은 것은?",
+                    options: [
+                      "두 직선이 일치하면 해는 없다.",
+                      "두 직선이 평행하면 해는 무수히 많다.",
+                      "두 직선의 기울기가 같고 $y$절편이 다르면 해는 $1$개이다.",
+                      "두 직선이 한 점에서 만나면 그 교점의 좌표가 연립방정식의 해이다.",
+                      "두 직선이 일치하면 좌표평면 위의 모든 점이 해가 된다."
+                    ],
+                    answer: "4",
+                    explanation: "두 직선이 한 점에서 만날 때 그 교점의 좌표가 연립방정식의 유일한 해입니다."
+                  },
+                  {
+                    id: "3_2_2_sa1",
+                    type: "SA",
+                    question: "연립방정식 $\\begin{cases} -ax + 3y = -4 \\\\ 2x - 6y = 6 \\end{cases}$의 해가 없을 때, 수 $a$의 값을 구하시오.",
+                    answer: "1",
+                    keywords: ["1"],
+                    explanation: "해가 없으려면 $\\frac{-a}{2} = \\frac{3}{-6} \\neq \\frac{-4}{6}$이어야 하므로 $-\\frac{a}{2} = -\\frac{1}{2} \\Rightarrow a = 1$입니다."
+                  },
+                  {
+                    id: "3_2_2_sa2",
+                    type: "SA",
+                    question: "두 일차방정식 $2x + 5y = 18$, $x - 4y = -4$의 그래프의 교점을 지나고, 기울기가 $-\\frac{1}{4}$인 일차함수의 식을 구하시오.",
+                    answer: "y = -1/4x + 3",
+                    keywords: ["-1/4", "+ 3", "+3"],
+                    explanation: "연립방정식을 풀면 교점은 $(4, 2)$입니다. 기울기가 $-\\frac{1}{4}$이고 $(4, 2)$를 지나므로 $y = -\\frac{1}{4}x + 3$입니다."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE
+    // =========================================================================
+    const state = {
+      student: null, // { grade, classNum, number, name }
+      majorId: null,
+      middleId: null,
+      subId: null,
+      selectedType: "ALL", // ALL | OX | MC | SA
+      userAnswers: {}, // { questionId: value }
+      isGraded: false,
+      currentBatchIds: [], // record indices for current graded quiz
+      records: [] // Accumulated records for Excel export
+    };
+
+    // =========================================================================
+    // 3. INITIALIZATION & CLOCK
+    // =========================================================================
+    function initSelectors() {
+      const classSel = document.getElementById('sel-class');
+      for (let c = 1; c <= 7; c++) {
+        const opt = document.createElement('option');
+        opt.value = String(c);
+        opt.textContent = `${c}반`;
+        if (c === 1) opt.selected = true;
+        classSel.appendChild(opt);
+      }
+
+      const numSel = document.getElementById('sel-number');
+      for (let n = 1; n <= 40; n++) {
+        const opt = document.createElement('option');
+        opt.value = String(n);
+        opt.textContent = `${n}번`;
+        if (n === 1) opt.selected = true;
+        numSel.appendChild(opt);
+      }
+    }
+
+    function getFormattedTimestamp(dateObj = new Date()) {
+      const pad = (v) => String(v).padStart(2, '0');
+      return `${dateObj.getFullYear()}-${pad(dateObj.getMonth() + 1)}-${pad(dateObj.getDate())} ` +
+             `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}:${pad(dateObj.getSeconds())}`;
+    }
+
+    function startClock() {
+      const update = () => {
+        const el = document.getElementById('live-clock');
+        if (el) el.textContent = getFormattedTimestamp();
+      };
+      update();
+      setInterval(update, 1000);
+    }
+
+    function renderMath(target = document.body) {
+      if (window.renderMathInElement) {
+        renderMathInElement(target, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false }
+          ],
+          throwOnError: false
+        });
+      }
+    }
+
+    function showToast(msg, icon = "ℹ️") {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-icon').textContent = icon;
+      document.getElementById('toast-msg').textContent = msg;
+      toast.classList.remove('hidden');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3200);
+    }
+
+    // =========================================================================
+    // 4. STUDENT LOGIN & NAVIGATION
+    // =========================================================================
+    function handleLogin(e) {
+      e.preventDefault();
+      const grade = document.getElementById('sel-grade').value;
+      const classNum = document.getElementById('sel-class').value;
+      const number = document.getElementById('sel-number').value;
+      const name = document.getElementById('inp-name').value.trim();
+
+      if (!name) {
+        showToast("이름을 입력해 주세요.", "⚠️");
+        return;
+      }
+
+      state.student = { grade, classNum, number, name };
+      document.getElementById('header-student-info').textContent = `${grade}학년 ${classNum}반 ${number}번 ${name}`;
+      document.getElementById('app-header').classList.remove('hidden');
+      document.getElementById('view-login').classList.add('hidden');
+
+      navigateTo('major');
+      showToast(`${name} 학생, 환영합니다! 단원을 선택해 주세요.`, "👋");
+    }
+
+    function editStudentInfo() {
+      document.getElementById('view-login').classList.remove('hidden');
+      document.getElementById('app-header').classList.add('hidden');
+      hideAllContentViews();
+    }
+
+    function hideAllContentViews() {
+      ['breadcrumb-bar', 'view-major', 'view-middle', 'view-sub', 'view-quiz'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+    }
+
+    function navigateTo(level, id = null) {
+      hideAllContentViews();
+      document.getElementById('breadcrumb-bar').classList.remove('hidden');
+
+      if (level === 'major') {
+        state.majorId = null;
+        state.middleId = null;
+        state.subId = null;
+        renderMajorView();
+      } else if (level === 'middle') {
+        state.majorId = id || state.majorId;
+        state.middleId = null;
+        state.subId = null;
+        renderMiddleView();
+      } else if (level === 'sub') {
+        state.middleId = id || state.middleId;
+        state.subId = null;
+        renderSubView();
+      } else if (level === 'quiz') {
+        state.subId = id || state.subId;
+        state.selectedType = "ALL";
+        state.userAnswers = {};
+        state.isGraded = false;
+        state.currentBatchIds = [];
+        renderQuizView();
+      }
+
+      updateBreadcrumb();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function goBack() {
+      if (state.subId) {
+        navigateTo('sub');
+      } else if (state.middleId) {
+        navigateTo('middle');
+      } else if (state.majorId) {
+        navigateTo('major');
+      } else {
+        editStudentInfo();
+      }
+    }
+
+    function updateBreadcrumb() {
+      const list = document.getElementById('breadcrumb-list');
+      list.innerHTML = '';
+
+      const addCrumb = (label, onClick, isCurrent = false) => {
+        const li = document.createElement('li');
+        if (isCurrent) {
+          li.className = "font-bold text-indigo-700";
+          li.textContent = label;
+        } else {
+          const btn = document.createElement('button');
+          btn.type = "button";
+          btn.className = "hover:text-indigo-600 hover:underline transition";
+          btn.textContent = label;
+          btn.onclick = onClick;
+          li.appendChild(btn);
+        }
+        list.appendChild(li);
+      };
+
+      const addSep = () => {
+        const sep = document.createElement('li');
+        sep.className = "text-slate-400 select-none";
+        sep.textContent = ">";
+        list.appendChild(sep);
+      };
+
+      addCrumb("대단원 목록", () => navigateTo('major'), !state.majorId);
+
+      if (state.majorId) {
+        const major = CURRICULUM.find(m => m.id === state.majorId);
+        addSep();
+        addCrumb(major.title, () => navigateTo('middle', major.id), !state.middleId);
+
+        if (state.middleId) {
+          const mid = major.middleUnits.find(m => m.id === state.middleId);
+          addSep();
+          addCrumb(mid.title, () => navigateTo('sub', mid.id), !state.subId);
+
+          if (state.subId) {
+            const sub = mid.subUnits.find(s => s.id === state.subId);
+            addSep();
+            addCrumb(sub.title, null, true);
+          }
+        }
+      }
+    }
+
+    // =========================================================================
+    // 5. RENDER UNIT VIEWS (대단원 -> 중단원 -> 소단원)
+    // =========================================================================
+    function renderMajorView() {
+      const view = document.getElementById('view-major');
+      const container = document.getElementById('major-list');
+      container.innerHTML = '';
+
+      CURRICULUM.forEach(major => {
+        const totalQ = major.middleUnits.reduce((acc, m) =>
+          acc + m.subUnits.reduce((sAcc, s) => sAcc + s.questions.length, 0), 0);
+
+        const card = document.createElement('button');
+        card.type = "button";
+        card.onclick = () => navigateTo('middle', major.id);
+        card.className = "card-hover text-left w-full bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center justify-between gap-4";
+        card.innerHTML = `
+          <div>
+            <span class="inline-block px-2.5 py-1 rounded-md bg-indigo-50 text-indigo-700 text-xs font-bold mb-2">${major.subtitle}</span>
+            <h3 class="text-2xl font-extrabold text-slate-900">${major.title}</h3>
+            <p class="text-sm text-slate-600 mt-1">${major.description}</p>
+            <div class="mt-3 flex items-center gap-3 text-xs font-semibold text-slate-500">
+              <span>중단원 ${major.middleUnits.length}개</span>
+              <span>•</span>
+              <span>수록 문항 ${totalQ}문항</span>
+            </div>
+          </div>
+          <div class="w-11 h-11 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg shrink-0">
+            →
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      view.classList.remove('hidden');
+    }
+
+    function renderMiddleView() {
+      const major = CURRICULUM.find(m => m.id === state.majorId);
+      document.getElementById('middle-heading').textContent = `${major.title} · 중단원 선택`;
+
+      const container = document.getElementById('middle-list');
+      container.innerHTML = '';
+
+      major.middleUnits.forEach((mid, idx) => {
+        const qCount = mid.subUnits.reduce((acc, s) => acc + s.questions.length, 0);
+        const card = document.createElement('button');
+        card.type = "button";
+        card.onclick = () => navigateTo('sub', mid.id);
+        card.className = "card-hover text-left bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between gap-4";
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-bold">중단원 ${idx + 1}</span>
+              <span class="text-xs font-semibold text-slate-400">소단원 ${mid.subUnits.length}개 · ${qCount}문항</span>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-900">${mid.title}</h3>
+            <p class="text-sm text-slate-600 mt-1.5 leading-relaxed">${mid.description}</p>
+          </div>
+          <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+            <span>소단원 보러가기</span>
+            <span>→</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('view-middle').classList.remove('hidden');
+    }
+
+    function renderSubView() {
+      const major = CURRICULUM.find(m => m.id === state.majorId);
+      const mid = major.middleUnits.find(m => m.id === state.middleId);
+      document.getElementById('sub-heading').textContent = `${mid.title} · 소단원 선택`;
+
+      const container = document.getElementById('sub-list');
+      container.innerHTML = '';
+
+      mid.subUnits.forEach((sub, idx) => {
+        const oxCnt = sub.questions.filter(q => q.type === 'OX').length;
+        const mcCnt = sub.questions.filter(q => q.type === 'MC').length;
+        const saCnt = sub.questions.filter(q => q.type === 'SA').length;
+
+        const card = document.createElement('button');
+        card.type = "button";
+        card.onclick = () => navigateTo('quiz', sub.id);
+        card.className = "card-hover text-left bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between gap-4";
+        card.innerHTML = `
+          <div>
+            <span class="inline-block px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-bold mb-2">소단원 ${idx + 1}</span>
+            <h3 class="text-base font-extrabold text-slate-900">${sub.title}</h3>
+            <p class="text-xs text-slate-600 mt-1.5 leading-relaxed">${sub.description}</p>
+          </div>
+          <div class="space-y-2.5">
+            <div class="flex flex-wrap gap-1.5 text-[11px] font-semibold">
+              <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">OX ${oxCnt}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">5지선다 ${mcCnt}</span>
+              <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700">서술형 ${saCnt}</span>
+            </div>
+            <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-indigo-600">
+              <span>문항 유형 선택 및 풀기</span>
+              <span>→</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('view-sub').classList.remove('hidden');
+    }
+
+    // =========================================================================
+    // 6. RENDER QUIZ & QUESTION TYPE FILTERING
+    // =========================================================================
+    function getCurrentUnitObjects() {
+      const major = CURRICULUM.find(m => m.id === state.majorId);
+      const mid = major.middleUnits.find(m => m.id === state.middleId);
+      const sub = mid.subUnits.find(m => m.id === state.subId);
+      return { major, mid, sub };
+    }
+
+    function getFilteredQuestions() {
+      const { sub } = getCurrentUnitObjects();
+      if (state.selectedType === 'ALL') return sub.questions;
+      return sub.questions.filter(q => q.type === state.selectedType);
+    }
+
+    function selectQuestionType(type) {
+      state.selectedType = type;
+      state.userAnswers = {};
+      state.isGraded = false;
+      state.currentBatchIds = [];
+      renderQuizView();
+    }
+
+    function renderQuizView() {
+      const { major, mid, sub } = getCurrentUnitObjects();
+      document.getElementById('quiz-unit-badge').textContent = `${major.title} > ${mid.title}`;
+      document.getElementById('quiz-title').textContent = sub.title;
+      document.getElementById('quiz-desc').textContent = sub.description;
+
+      // Render Type Filter Buttons
+      const types = [
+        { key: "ALL", label: `전체 유형 (${sub.questions.length}문항)` },
+        { key: "OX", label: `OX 퀴즈 (${sub.questions.filter(q => q.type === 'OX').length})` },
+        { key: "MC", label: `5지선다형 (${sub.questions.filter(q => q.type === 'MC').length})` },
+        { key: "SA", label: `서술형 (${sub.questions.filter(q => q.type === 'SA').length})` }
+      ];
+
+      const typeSelector = document.getElementById('type-selector');
+      typeSelector.innerHTML = '';
+      types.forEach(t => {
+        const active = state.selectedType === t.key;
+        const btn = document.createElement('button');
+        btn.type = "button";
+        btn.onclick = () => selectQuestionType(t.key);
+        btn.className = active
+          ? "px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 text-white shadow-sm transition"
+          : "px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition";
+        btn.textContent = t.label;
+        typeSelector.appendChild(btn);
+      });
+
+      // Render Questions
+      const questions = getFilteredQuestions();
+      const qContainer = document.getElementById('questions-container');
+      qContainer.innerHTML = '';
+
+      questions.forEach((q, idx) => {
+        const typeBadgeMap = {
+          OX: { text: "OX 퀴즈", cls: "bg-sky-50 text-sky-700 border-sky-200" },
+          MC: { text: "5지선다형", cls: "bg-violet-50 text-violet-700 border-violet-200" },
+          SA: { text: "서술형", cls: "bg-amber-50 text-amber-700 border-amber-200" }
+        };
+        const badge = typeBadgeMap[q.type];
+        const savedVal = state.userAnswers[q.id] || "";
+
+        const card = document.createElement('div');
+        card.id = `card-${q.id}`;
+        card.className = "bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4";
+
+        let inputHtml = '';
+        if (q.type === 'OX') {
+          inputHtml = `
+            <div class="grid grid-cols-2 gap-3 max-w-md pt-1">
+              ${['O', 'X'].map(val => {
+                const isSel = savedVal === val;
+                const activeCls = isSel
+                  ? (val === 'O' ? 'border-blue-600 bg-blue-50 text-blue-700 ring-2 ring-blue-200' : 'border-rose-600 bg-rose-50 text-rose-700 ring-2 ring-rose-200')
+                  : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700';
+                return `
+                  <button type="button" ${state.isGraded ? 'disabled' : ''}
+                    onclick="setAnswer('${q.id}', '${val}')"
+                    class="py-3.5 px-4 rounded-xl border-2 font-extrabold text-xl transition ${activeCls}">
+                    ${val === 'O' ? '⭕ O (그렇다)' : '❌ X (아니다)'}
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else if (q.type === 'MC') {
+          const circled = ['①', '②', '③', '④', '⑤'];
+          inputHtml = `
+            <div class="space-y-2 pt-1">
+              ${q.options.map((optText, oIdx) => {
+                const choiceNum = String(oIdx + 1);
+                const isSel = savedVal === choiceNum;
+                const activeCls = isSel
+                  ? 'border-indigo-600 bg-indigo-50 text-indigo-900 font-semibold ring-1 ring-indigo-300'
+                  : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-800';
+                return `
+                  <button type="button" ${state.isGraded ? 'disabled' : ''}
+                    onclick="setAnswer('${q.id}', '${choiceNum}')"
+                    class="w-full text-left px-4 py-3 rounded-xl border transition flex items-center gap-3 text-sm ${activeCls}">
+                    <span class="font-bold text-indigo-600 shrink-0">${circled[oIdx]}</span>
+                    <span>${optText}</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          `;
+        } else if (q.type === 'SA') {
+          inputHtml = `
+            <div class="pt-1">
+              <textarea rows="2" ${state.isGraded ? 'disabled' : ''}
+                oninput="setAnswer('${q.id}', this.value, true)"
+                placeholder="풀이 과정과 정답을 입력하세요."
+                class="w-full rounded-xl border border-slate-300 p-3.5 text-sm text-slate-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none">${savedVal}</textarea>
+            </div>
+          `;
+        }
+
+        // Feedback block if graded
+        let feedbackHtml = '';
+        if (state.isGraded) {
+          const evalRes = evaluateQuestion(q, savedVal);
+          const statusBanner = evalRes.isCorrect === true
+            ? `<span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">정답 (O)</span>`
+            : evalRes.isCorrect === false
+              ? `<span class="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 text-xs font-bold">오답 (X)</span>`
+              : `<span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">서술형 확인</span>`;
+
+          feedbackHtml = `
+            <div class="mt-4 pt-4 border-t border-slate-100 bg-slate-50 rounded-xl p-4 space-y-1.5 text-sm">
+              <div class="flex items-center gap-2">
+                ${statusBanner}
+                <span class="font-bold text-slate-800">모범 답안: ${formatCorrectAnswer(q)}</span>
+              </div>
+              <p class="text-slate-600 leading-relaxed"><strong class="text-slate-800">[해설]</strong> ${q.explanation}</p>
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="w-7 h-7 rounded-lg bg-slate-900 text-white text-xs font-bold flex items-center justify-center">
+                ${idx + 1}
+              </span>
+              <span class="px-2.5 py-0.5 rounded-md border text-xs font-bold ${badge.cls}">
+                ${badge.text}
+              </span>
+            </div>
+          </div>
+          <div class="text-base font-medium text-slate-900 leading-relaxed">
+            ${q.question}
+          </div>
+          ${q.svg ? SVG_GRAPHS[q.svg] : ''}
+          ${inputHtml}
+          ${feedbackHtml}
+        `;
+
+        qContainer.appendChild(card);
+      });
+
+      // Reset result panel visibility
+      const resultPanel = document.getElementById('result-panel');
+      if (state.isGraded) {
+        resultPanel.classList.remove('hidden');
+      } else {
+        resultPanel.classList.add('hidden');
+        document.getElementById('teacher-question-input').value = '';
+        document.getElementById('question-saved-badge').classList.add('hidden');
+        document.getElementById('question-status-text').textContent = '';
+      }
+
+      document.getElementById('view-quiz').classList.remove('hidden');
+      renderMath(qContainer);
+    }
+
+    function setAnswer(qId, val, silent = false) {
+      state.userAnswers[qId] = val;
+      if (!silent) {
+        renderQuizView();
+      }
+    }
+
+    function resetCurrentQuiz() {
+      state.userAnswers = {};
+      state.isGraded = false;
+      state.currentBatchIds = [];
+      renderQuizView();
+      showToast("답안이 초기화되었습니다.", "🔄");
+    }
+
+    // =========================================================================
+    // 7. GRADING, TEACHER QUESTION & GOOGLE SHEETS SYNC
+    // =========================================================================
+    function normalizeText(str) {
+      return String(str || '').replace(/\s+/g, '').toLowerCase();
+    }
+
+    function evaluateQuestion(q, rawAns) {
+      const ans = String(rawAns || '').trim();
+      if (q.type === 'OX' || q.type === 'MC') {
+        const isCorrect = ans === q.answer;
+        return { isCorrect, label: isCorrect ? 'O' : 'X' };
+      } else {
+        if (!ans) return { isCorrect: false, label: '미작성' };
+        const normAns = normalizeText(ans);
+        const matched = (q.keywords || []).every(kw => normAns.includes(normalizeText(kw)));
+        return {
+          isCorrect: matched ? true : null,
+          label: matched ? 'O (핵심포함)' : '서술형제출'
+        };
+      }
+    }
+
+    function formatCorrectAnswer(q) {
+      if (q.type === 'MC') {
+        const circled = ['①', '②', '③', '④', '⑤'];
+        const idx = Number(q.answer) - 1;
+        return `${circled[idx]} ${q.options[idx]}`;
+      }
+      return q.answer;
+    }
+
+    function stripLatexForExport(text) {
+      return String(text || '')
+        .replace(/\$\$/g, '')
+        .replace(/\$/g, '')
+        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1/$2)')
+        .replace(/\\text\{([^}]+)\}/g, '$1')
+        .replace(/\\times/g, '×')
+        .replace(/\\neq/g, '≠')
+        .replace(/\\le/g, '≤')
+        .replace(/\\left|\\right/g, '')
+        .replace(/\\begin\{cases\}|\\end\{cases\}/g, '')
+        .replace(/\\\\/g, ', ')
+        .replace(/<[^>]*>/g, '')
+        .trim();
+    }
+
+    function gradeQuiz() {
+      const questions = getFilteredQuestions();
+      if (questions.length === 0) return;
+
+      const unanswered = questions.filter(q => !String(state.userAnswers[q.id] || '').trim());
+      if (unanswered.length > 0) {
+        if (!confirm(`아직 작성하지 않은 문항이 ${unanswered.length}개 있습니다. 그대로 채점할까요?`)) {
+          return;
+        }
+      }
+
+      const nowStr = getFormattedTimestamp();
+      const { major, mid, sub } = getCurrentUnitObjects();
+      const typeLabelMap = { OX: "OX퀴즈", MC: "5지선다형", SA: "서술형" };
+
+      let objectiveTotal = 0;
+      let objectiveCorrect = 0;
+      const newRecords = [];
+      state.currentBatchIds = [];
+
+      questions.forEach((q, idx) => {
+        const rawAns = String(state.userAnswers[q.id] || '').trim();
+        const evalRes = evaluateQuestion(q, rawAns);
+
+        if (q.type === 'OX' || q.type === 'MC') {
+          objectiveTotal++;
+          if (evalRes.isCorrect) objectiveCorrect++;
+        }
+
+        const displayStudentAns = q.type === 'MC' && rawAns
+          ? `${rawAns}번 (${stripLatexForExport(q.options[Number(rawAns) - 1] || '')})`
+          : (rawAns || '(미작성)');
+
+        const rec = {
+          timestamp: nowStr,
+          grade: state.student.grade,
+          classNum: state.student.classNum,
+          number: state.student.number,
+          name: state.student.name,
+          majorUnit: major.title,
+          middleUnit: mid.title,
+          subUnit: sub.title,
+          qType: typeLabelMap[q.type],
+          qNum: idx + 1,
+          question: stripLatexForExport(q.question),
+          studentAnswer: displayStudentAns,
+          correctAnswer: stripLatexForExport(formatCorrectAnswer(q)),
+          result: evalRes.label,
+          teacherQuestion: ""
+        };
+
+        const insertedIdx = state.records.push(rec) - 1;
+        state.currentBatchIds.push(insertedIdx);
+        newRecords.push(rec);
+      });
+
+      state.isGraded = true;
+      updateRecordCountBadge();
+      renderQuizView();
+      playSuccessChime();
+
+      // Update Result Headline
+      const headline = document.getElementById('result-headline');
+      const subtext = document.getElementById('result-subtext');
+      if (objectiveTotal > 0) {
+        headline.textContent = `객관식 ${objectiveTotal}문항 중 ${objectiveCorrect}문항 정답!`;
+        subtext.textContent = `작성 시각(${nowStr}) 기준으로 기록되었습니다. 아래에서 해설을 확인하고 선생님께 질문을 남길 수 있습니다.`;
+      } else {
+        headline.textContent = `서술형 ${questions.length}문항 작성 완료!`;
+        subtext.textContent = `작성 시각(${nowStr}) 기준으로 기록되었습니다. 모범 답안과 비교해 보세요.`;
+      }
+
+      // Send to Google Apps Script
+      sendToGoogleSheet(newRecords, "");
+
+      document.getElementById('result-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function submitTeacherQuestion() {
+      const qInput = document.getElementById('teacher-question-input');
+      const questionText = qInput.value.trim();
+
+      if (!questionText) {
+        showToast("질문 내용을 입력한 후 전송 버튼을 눌러주세요.", "⚠️");
+        qInput.focus();
+        return;
+      }
+
+      // Attach question to the current graded batch records
+      const targetRecords = [];
+      state.currentBatchIds.forEach(idx => {
+        if (state.records[idx]) {
+          state.records[idx].teacherQuestion = questionText;
+          targetRecords.push(state.records[idx]);
+        }
+      });
+
+      document.getElementById('question-saved-badge').classList.remove('hidden');
+      document.getElementById('question-status-text').textContent = `등록 시각: ${getFormattedTimestamp()} · 엑셀 내보내기에도 자동 포함됩니다.`;
+      playNotifySound();
+      showToast("선생님께 질문이 등록 및 전송되었습니다!", "✉️");
+
+      // Send updated question to Google Sheet
+      sendToGoogleSheet(targetRecords, questionText);
+    }
+
+    async function sendToGoogleSheet(records, questionText) {
+      if (!APPS_SCRIPT_URL) return;
+
+      const headerBadge = document.getElementById('sync-status-badge');
+      const resultTag = document.getElementById('result-sync-tag');
+
+      headerBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>전송 중...</span>`;
+      if (resultTag) resultTag.textContent = "구글 시트 전송 중...";
+
+      const payload = {
+        student: state.student,
+        records: records,
+        question: questionText
+      };
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        headerBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500"></span><span>구글 시트 전송 완료</span>`;
+        if (resultTag) {
+          resultTag.textContent = "✓ 구글 시트 전송 완료";
+          resultTag.className = "px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-xs font-semibold text-emerald-200";
+        }
+      } catch (err) {
+        console.error("Google Sheet Sync Error:", err);
+        headerBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-rose-500"></span><span>오프라인 (엑셀 저장 권장)</span>`;
+        if (resultTag) {
+          resultTag.textContent = "전송 실패 (엑셀 내보내기 이용)";
+          resultTag.className = "px-2.5 py-0.5 rounded-full bg-rose-500/20 border border-rose-400/40 text-xs font-semibold text-rose-200";
+        }
+      }
+    }
+
+    function updateRecordCountBadge() {
+      document.getElementById('record-count-badge').textContent = String(state.records.length);
+    }
+
+    // =========================================================================
+    // 8. EXCEL (.XLSX) EXPORT
+    // =========================================================================
+    function exportToExcel() {
+      if (state.records.length === 0) {
+        showToast("아직 채점 완료된 기록이 없습니다. 먼저 문제를 풀고 채점해 주세요.", "⚠️");
+        return;
+      }
+
+      const wb = XLSX.utils.book_new();
+
+      // Sheet 1: 형성평가결과
+      const rows1 = state.records.map(r => ({
+        "작성시각(PC시간)": r.timestamp,
+        "학년": r.grade,
+        "반": r.classNum,
+        "번호": r.number,
+        "이름": r.name,
+        "대단원": r.majorUnit,
+        "중단원": r.middleUnit,
+        "소단원": r.subUnit,
+        "문항유형": r.qType,
+        "문항번호": r.qNum,
+        "문제내용": r.question,
+        "학생작성답안": r.studentAnswer,
+        "모범답안": r.correctAnswer,
+        "채점결과": r.result,
+        "선생님께 보낸 질문": r.teacherQuestion || ""
+      }));
+
+      const ws1 = XLSX.utils.json_to_sheet(rows1);
+      ws1['!cols'] = [
+        { wch: 20 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 10 },
+        { wch: 14 }, { wch: 24 }, { wch: 26 }, { wch: 12 }, { wch: 8 },
+        { wch: 45 }, { wch: 24 }, { wch: 24 }, { wch: 12 }, { wch: 40 }
+      ];
+      XLSX.utils.book_append_sheet(wb, ws1, "형성평가결과");
+
+      // Sheet 2: 질문 모음 (Distinct questions submitted)
+      const questionMap = new Map();
+      state.records.forEach(r => {
+        if (r.teacherQuestion && r.teacherQuestion.trim() !== "") {
+          const key = `${r.timestamp}_${r.subUnit}_${r.teacherQuestion}`;
+          if (!questionMap.has(key)) {
+            questionMap.set(key, {
+              "작성시각(PC시간)": r.timestamp,
+              "학년": r.grade,
+              "반": r.classNum,
+              "번호": r.number,
+              "이름": r.name,
+              "단원": `${r.middleUnit} > ${r.subUnit}`,
+              "선생님께 보낸 질문": r.teacherQuestion
+            });
+          }
+        }
+      });
+
+      const rows2 = questionMap.size > 0
+        ? Array.from(questionMap.values())
+        : [{ "안내": "작성된 질문이 없습니다." }];
+      const ws2 = XLSX.utils.json_to_sheet(rows2);
+      ws2['!cols'] = [
+        { wch: 20 }, { wch: 6 }, { wch: 6 }, { wch: 6 }, { wch: 10 }, { wch: 36 }, { wch: 50 }
+      ];
+      XLSX.utils.book_append_sheet(wb, ws2, "질문 모음");
+
+      const s = state.student;
+      const dateTag = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const filename = `형성평가결과_${s.grade}학년${s.classNum}반${s.number}번_${s.name}_${dateTag}.xlsx`;
+
+      XLSX.writeFile(wb, filename);
+      playNotifySound();
+      showToast(`엑셀 파일(${filename})이 다운로드되었습니다!`, "📥");
+    }
+
+    // Boot
+    initSelectors();
+    startClock();
+  </script>
+</body>
+</html>
